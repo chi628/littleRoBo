@@ -14,6 +14,7 @@ const firebaseConfig = {
 }
 
 export async function readData() {
+  console.log('env', import.meta.env.VITE_APP_ID, import.meta.env)
   const db = getDatabase()
   const _ref = ref(db)
 
