@@ -8,24 +8,28 @@ export enum GENDER {
 import { onMounted, ref } from 'vue'
 import GenderSticker from './GenderSticker.vue'
 import { generateUserId, writeUserData } from '../firebase'
+import { useUserStore, useGuessResultStore } from '../index'
+
+const props = defineProps({
+  show: Boolean,
+})
+
+const emit = defineEmits(['close'])
 
 enum STEP {
   INPUT_NAME,
   VOTE,
 }
 
-const isShow = ref(false)
+const guessResultStore = useGuessResultStore()
+const userStore = useUserStore()
+
 const step = ref<STEP>(STEP.INPUT_NAME)
-const name = ref('')
 const showNameHint = ref(false)
-const showFirstStep = ref(true)
 const showSecondStep = ref(false)
-const emit = defineEmits(['gender'])
 
 onMounted(() => {
-  isShow.value = true
-  name.value = localStorage.getItem('guessName') || ''
-  if (name.value) {
+  if (userStore.name !== '') {
     step.value = STEP.VOTE
     showSecondStep.value = true
   }
@@ -38,39 +42,69 @@ const onInputKeyup = (event: KeyboardEvent) => {
 }
 
 const nextStep = () => {
-  if (name.value.length > 0) {
+  if (userStore.name.length > 0) {
     step.value = STEP.VOTE
-    localStorage.setItem('guessName', name.value)
+    localStorage.setItem('guessName', userStore.name)
   } else {
     showNameHint.value = true
   }
 }
+
 const onLeave = () => {
   if (step.value === STEP.VOTE) {
     showSecondStep.value = true
   }
 }
+
 const chooseGender = (gender: GENDER) => {
-  emit('gender', gender)
-  isShow.value = false
-  const userId = generateUserId(name.value)
-  writeUserData(userId, name.value, gender)
+  const userId = generateUserId(userStore.name)
+  writeUserData(userId, userStore.name, gender)
+
+  switch (gender) {
+    case GENDER.BOY:
+      guessResultStore.boyList?.unshift({
+        key: userId,
+        username: userStore.name,
+        gender,
+      })
+      break
+    case GENDER.GIRL:
+      guessResultStore.girlList?.unshift({
+        key: userId,
+        username: userStore.name,
+        gender,
+      })
+      break
+    default:
+      break
+  }
+
+  userStore.hasVote = true
+  userStore.voteRes = {
+    username: userStore.name,
+    gender,
+  }
+  closeModal()
+}
+
+const closeModal = () => {
+  emit('close')
 }
 </script>
 <template>
   <Transition>
     <div
-      v-if="isShow"
-      class="w-full max-w-[480px] h-[200px] rounded-t-[19px] fixed bottom-0 bg-[#d6ccc2] flex flex-col justify-center items-center overflow-hidden"
+      v-if="props.show"
+      class="w-full max-w-[480px] h-[200px] rounded-t-[19px] fixed bottom-0 bg-[#d6ccc2] flex flex-col justify-center items-center overflow-hidden z-20"
     >
-      <div class="icon-close absolute top-4 right-6 w-6 h-6" @click="isShow = false"></div>
+      <div class="icon-close absolute top-4 right-6 w-6 h-6" @click="closeModal"></div>
       <div class="w-[80%] h-[150px]">
         <Transition @after-leave="onLeave" name="input-name">
           <div v-if="step === STEP.INPUT_NAME" class="h-full space-y-2">
             <p class="font-NotoSansTC font-bold text-lg">請輸入您的名字</p>
             <div class="flex items-center space-x-4">
               <input
-                v-model="name"
+                v-model="userStore.name"
                 @keyup="onInputKeyup"
                 type="text"
                 class="w-[80%] h-[38px] rounded-[10px] border border-solid border-[#d6ccc2] focus:outline-none px-2"
@@ -84,15 +118,15 @@ const chooseGender = (gender: GENDER) => {
         </Transition>
         <Transition name="vote">
           <div v-if="showSecondStep" class="h-full text-center space-y-3">
-            <p class="text-[#1b263b] font-bold font-NotoSansTC">按下猜測的性別，就可以投票囉</p>
+            <p class="text-[#1b263b] font-bold font-NotoSansTC">按下猜測的性別，就完成投票囉</p>
             <div class="flex justify-center items-center space-x-6">
               <div @click="chooseGender(GENDER.BOY)">
                 <span class="text-lg text-[#1b263b] font-bold">Boy</span>
-                <GenderSticker :name="name" :gender="GENDER.BOY" />
+                <GenderSticker :name="userStore.name" :gender="GENDER.BOY" />
               </div>
               <div @click="chooseGender(GENDER.GIRL)">
                 <span class="text-lg text-[#1b263b] font-bold">Girl</span>
-                <GenderSticker :name="name" :gender="GENDER.GIRL" />
+                <GenderSticker :name="userStore.name" :gender="GENDER.GIRL" />
               </div>
             </div>
           </div>

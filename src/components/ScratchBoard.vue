@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { onMounted, ref, type PropType } from 'vue'
-import type { GENDER } from './StickerModal.vue'
+import { onMounted, ref } from 'vue'
+import { GENDER } from './StickerModal.vue'
+import { useUserStore } from '../index'
 
-const props = defineProps({
-  gender: String as PropType<GENDER>,
-})
+const userStore = useUserStore()
+
+const isGuessBoy = ref(false)
 
 const scratchEl = ref<HTMLDivElement>()
 const canvas = ref<HTMLCanvasElement>()
 let ctx: CanvasRenderingContext2D | null = null
 
 onMounted(() => {
+  isGuessBoy.value = userStore.voteRes?.gender === GENDER.BOY
+
   if (scratchEl.value && canvas.value) {
     const width = scratchEl.value.getBoundingClientRect().width
     const height = scratchEl.value.getBoundingClientRect().height
@@ -21,8 +24,6 @@ onMounted(() => {
     const gap = Math.floor(width * 0.043)
     const _width = Math.floor((width - gap * 2) / 3)
     const radius = Math.floor(_width / 2)
-
-    console.log('gap', gap, width, _width)
 
     if (ctx) {
       // cols 列 直行橫列
@@ -72,23 +73,32 @@ const endScratch = () => {
 }
 </script>
 <template>
-  <div
-    class="w-full aspect-[7/10] relative"
-    :class="[{ 'ans-girl': props.gender === 'girl' }, { 'ans-boy': props.gender === 'boy' }]"
-  >
+  <div class="w-full aspect-[7/10] relative" :class="[isGuessBoy ? 'ans-boy' : 'ans-girl']">
+    <div
+      class="absolute left-0 right-0 -top-[30px] flex justify-around items-center text-[#1b263b] font-bold text-[28px] text-center"
+    >
+      <div class="w-[60px] h-[60px] leading-[60px] rounded-full bg-[#d7b489] shadow-xl">小</div>
+      <div class="w-[60px] h-[60px] leading-[60px] rounded-full bg-[#e9bfab] shadow-xl relative -top-2">蘿</div>
+      <div class="w-[60px] h-[60px] leading-[60px] rounded-full bg-[#d7b489] shadow-xl relative -top-[5px]">蔔</div>
+    </div>
     <div ref="scratchEl" class="absolute w-1/2 h-[38%] top-[46%] left-1/2 -translate-x-[52%]">
       <canvas ref="canvas" width="100%" height="100%"></canvas>
     </div>
+    <span
+      class="bg-[#fe9b00] rounded-[19px] absolute -bottom-[10px] px-3 leading-6 text-white text-sm left-1/2 -translate-x-1/2"
+    >
+      小提醒：連線成功，代表你答對囉
+    </span>
   </div>
 </template>
 
 <style lang="scss">
 .ans-boy {
-  background-image: url(@/assets/ans-boy.png);
+  background-image: url(@/assets/ans-boy.jpg);
   @apply bg-no-repeat bg-contain bg-center;
 }
 .ans-girl {
-  background-image: url(@/assets/ans-girl.png);
+  background-image: url(@/assets/ans-girl.jpg);
   @apply bg-no-repeat bg-contain bg-center;
 }
 </style>

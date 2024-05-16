@@ -1,23 +1,25 @@
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
+import { defineStore } from 'pinia'
+import type { GenderList, VoteInfo } from './type/index'
 
-interface tmp {
-  name: string
-  gender: string
-}
-
-export const useGuessList = () => {
-  const list = ref<tmp[]>([])
-
-  const newList = computed(() => list.value)
-
-  const updateList = (l: tmp[]) => {
-    list.value = l
-    console.log('update', l, newList.value, list.value)
-  }
+export const useGuessResultStore = defineStore('guessResult', () => {
+  const boyList = ref<GenderList[]>()
+  const girlList = ref<GenderList[]>()
 
   return {
-    list,
-    newList,
-    updateList,
+    boyList,
+    girlList,
   }
-}
+})
+
+export const useUserStore = defineStore('userInfo', () => {
+  const name = ref('')
+  const hasVote = ref(false)
+  const voteRes = ref<VoteInfo>()
+
+  return {
+    name,
+    hasVote,
+    voteRes,
+  }
+})

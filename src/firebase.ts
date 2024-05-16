@@ -1,8 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app'
-import { getAnalytics } from 'firebase/analytics'
 import { getDatabase, ref, set, get, child } from 'firebase/database'
-
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,
@@ -17,7 +15,7 @@ export async function readData() {
   const db = getDatabase()
   const _ref = ref(db)
 
-  const res: {} = await new Promise((resolve, reject) => {
+  const res: { [key: string]: { gender: string; username: string } } = await new Promise((resolve, reject) => {
     get(child(_ref, 'users'))
       .then(snapshot => {
         if (snapshot.exists()) {
@@ -29,23 +27,7 @@ export async function readData() {
       })
   })
 
-  const boyList = Object.keys(res)
-    .map(key => {
-      //@ts-ignore
-      return { key, ...res[key] }
-    })
-    .filter(o => o.gender === 'boy')
-  const girlList = Object.keys(res)
-    .map(key => {
-      //@ts-ignore
-      return { key, ...res[key] }
-    })
-    .filter(o => o.gender === 'girl')
-
-  return {
-    boyList,
-    girlList,
-  }
+  return res
 }
 
 export function writeUserData(userId: string, name: string, ans: string) {
@@ -68,6 +50,4 @@ export function generateUserId(userName: string) {
   return truncatedUserName
 }
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig)
-const analytics = getAnalytics(app)
+initializeApp(firebaseConfig)
