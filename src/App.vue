@@ -28,22 +28,24 @@ const getVoteResult = async () => {
 
   const res = await readData()
 
-  if (Object.values(res).filter(o => o.username === userStore.name).length > 0) {
-    userStore.hasVote = true
-    userStore.voteRes = Object.values(res).filter(o => o.username === userStore.name)[0]
+  if (res) {
+    if (Object.values(res).filter(o => o.username === userStore.name).length > 0) {
+      userStore.hasVote = true
+      userStore.voteRes = Object.values(res).filter(o => o.username === userStore.name)[0]
+    }
+
+    guessResultStore.boyList = Object.keys(res)
+      .map(key => {
+        return { key, ...res[key] }
+      })
+      .filter(o => o.gender === 'boy')
+
+    guessResultStore.girlList = Object.keys(res)
+      .map(key => {
+        return { key, ...res[key] }
+      })
+      .filter(o => o.gender === 'girl')
   }
-
-  guessResultStore.boyList = Object.keys(res)
-    .map(key => {
-      return { key, ...res[key] }
-    })
-    .filter(o => o.gender === 'boy')
-
-  guessResultStore.girlList = Object.keys(res)
-    .map(key => {
-      return { key, ...res[key] }
-    })
-    .filter(o => o.gender === 'girl')
 
   isFetching.value = false
 }

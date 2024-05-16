@@ -15,11 +15,14 @@ export async function readData() {
   const db = getDatabase()
   const _ref = ref(db)
 
-  const res: { [key: string]: { gender: string; username: string } } = await new Promise((resolve, reject) => {
+  const res: { [key: string]: { gender: string; username: string } } | null = await new Promise((resolve, reject) => {
     get(child(_ref, 'users'))
       .then(snapshot => {
+        console.log('snapshot', snapshot, snapshot.exists(), snapshot.val())
         if (snapshot.exists()) {
           resolve(snapshot.val())
+        } else {
+          resolve(null)
         }
       })
       .catch(e => {
