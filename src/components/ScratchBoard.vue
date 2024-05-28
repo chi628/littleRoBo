@@ -84,11 +84,13 @@ const endScratch = () => {
     <div ref="scratchEl" class="absolute w-1/2 h-[38%] top-[46%] left-1/2 -translate-x-[52%]">
       <canvas ref="canvas" width="100%" height="100%"></canvas>
     </div>
-    <span
-      class="bg-[#fe9b00] rounded-[19px] absolute -bottom-[10px] px-3 leading-6 text-white text-sm left-1/2 -translate-x-1/2"
-    >
-      小提醒：連線成功，代表你答對囉
-    </span>
+    <div class="absolute -bottom-[10px] left-0 w-full flex justify-center">
+      <span
+        class="bg-[#fe9b00] rounded-[19px] px-3 leading-6 text-white text-sm"
+      >
+        小提醒：連線成功，代表你答對囉
+      </span>
+    </div>
   </div>
 </template>
 
